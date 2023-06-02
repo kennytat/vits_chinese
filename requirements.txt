@@ -1,4 +1,12 @@
-torch==1.9.0
+so-vits-svc-fork==4.0.1
+torch==2.0.1+cu118
+torchaudio==2.0.2+cu118
+torchcrepe==0.0.19
+torchmetrics==0.11.4
 Cython
 transformers
 tensorboard
+pypinyin
+gradio
+srt
+docx2txt

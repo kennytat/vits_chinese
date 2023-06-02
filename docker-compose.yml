@@ -1,0 +1,23 @@
+version: "3.3"
+
+services:
+  tts:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kennytat/vits-chinese:gpu
+    container_name: tts-cn
+    # command: ""
+    ## Enable GPU
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    ports:
+      - 7901:7901
+    volumes:
+      - /home/vgm/Projects/vits-chinese/model:/app/tts/model

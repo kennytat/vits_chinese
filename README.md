@@ -8,10 +8,10 @@
 
 https://user-images.githubusercontent.com/16432329/220678182-4775dec8-9229-4578-870f-2eebc3a5d660.mp4
 
-
 Based on BERT, NaturalSpeech, VITS
 
 ### Features
+
 1, Hidden prosody embedding from BERT，get natural pauses in grammar
 
 2, Infer loss from NaturalSpeech，get less sound error
@@ -21,15 +21,40 @@ Based on BERT, NaturalSpeech, VITS
 :heartpulse::heartpulse::heartpulse:Tip: It is recommended to use **Infer Loss** fine-tune model after base model trained, and freeze **PosteriorEncoder** during fine-tuning.
 
 ### Online demo
+
 https://huggingface.co/spaces/maxmax20160403/vits_chinese
 
 ### Install
 
-> pip install -r requirements.txt
+## Dev
 
-> cd monotonic_align
+```bash
+conda create -n tts python=3.9.16
+conda activate tts
+pip install -r requirements.txt
+cd monotonic_align && mkdir monotonic_align
+python setup.py build_ext --inplace
+python app.py
+```
 
-> python setup.py build_ext --inplace
+## Docker build
+
+```
+docker build -t kennytat/vits-chinese:gpu .
+```
+
+## Model path
+
+- Download model and extract to ./model (prosody_model.pt, vits_bert_model.pth, G.pth, config.json)
+
+```
+bert/prosody_model.pt
+
+model/tts/<voice>/vits_bert_model.pth
+
+model/convert/<voice>/config.json
+model/convert/<voice>/G.pth
+```
 
 ### Infer with Pretrained model
 
@@ -49,7 +74,7 @@ put vits_bert_model.pth To ./vits_bert_model.pth
 
 ### Infer with chunk wave streaming out
 
-as key paramter, ***hop_frame = ∑decoder.ups.padding***
+as key paramter, **_hop_frame = ∑decoder.ups.padding_**
 
 > python vits_infer_stream.py --config ./configs/bert_vits.json --model vits_bert_model.pth
 
@@ -68,6 +93,7 @@ as key paramter, ***hop_frame = ∑decoder.ups.padding***
 > item = normalizer.normalize(item)
 
 ### Train
+
 download baker data: https://www.data-baker.com/data/index/TNtts/
 
 change sample rate of waves to **16kHz**, and put waves to ./data/waves
@@ -78,17 +104,17 @@ put 000001-010000.txt to ./data/000001-010000.txt
 
 > python train.py -c configs/bert_vits.json -m bert_vits
 
-
 ![bert_lose](https://user-images.githubusercontent.com/16432329/220883346-c382bea2-1d2f-4a16-b797-2f9e2d2fb639.png)
 
 ### Model compression based on knowledge distillation
+
 Student model has 53M size and 3× speed of teacher model.
 
 To train:
 
 > python train.py -c configs/bert_vits_student.json -m bert_vits_student
 
-To infer, get studet model at release page or 
+To infer, get studet model at release page or
 
 Google: :https://drive.google.com/file/d/1hTLWYEKH4GV9mQltrMyr3k2UKUo4chdp/view?usp=sharing
 
@@ -99,13 +125,15 @@ You can use vits_istft as a student model too.
 https://github.com/PlayVoice/vits_chinese/tree/vits_istft
 
 ### Video text
+
 > 天空呈现的透心的蓝，像极了当年。总在这样的时候，透过窗棂，心，在天空里无尽的游弋！柔柔的，浓浓的，痴痴的风，牵引起心底灵动的思潮；情愫悠悠，思情绵绵，风里默坐，红尘中的浅醉，诗词中的优柔，任那自在飞花轻似梦的情怀，裁一束霓衣，织就清浅淡薄的安寂。
-> 
+>
 > 风的影子翻阅过淡蓝色的信笺，柔和的文字浅浅地漫过我安静的眸，一如几朵悠闲的云儿，忽而氤氲成汽，忽而修饰成花，铅华洗尽后的透彻和靓丽，爽爽朗朗，轻轻盈盈
-> 
+>
 > 时光仿佛有穿越到了从前，在你诗情画意的眼波中，在你舒适浪漫的暇思里，我如风中的思绪徜徉广阔天际，仿佛一片沾染了快乐的羽毛，在云环影绕颤动里浸润着风的呼吸，风的诗韵，那清新的耳语，那婉约的甜蜜，那恬淡的温馨，将一腔情澜染得愈发的缠绵。
 
 ### Reference For TTS
+
 [Microsoft's NaturalSpeech: End-to-End Text to Speech Synthesis with Human-Level Quality](https://arxiv.org/abs/2205.04421)
 
 https://github.com/Executedone/Chinese-FastSpeech2 **bert prosody**
@@ -115,6 +143,7 @@ https://github.com/wenet-e2e/WeTextProcessing
 https://github.com/jaywalnut310/vits
 
 ### Info For Voice Clone
+
 [Speak, Read and Prompt:High-Fidelity Text-to-Speech with Minimal Supervision](https://arxiv.org/abs/2302.03540)
 
 [SNAC : Speaker-normalized Affine Coupling Layer in Flow-based Architecture for Zero-Shot Multi-Speaker Text-to-Speech](https://arxiv.org/pdf/2211.16866.pdf)
