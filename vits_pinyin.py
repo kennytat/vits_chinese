@@ -44,6 +44,7 @@ class VITS_PinYin:
     def chinese_to_phonemes(self, text):
         # @todo:考虑使用g2pw的chinese bert替换原始的pypinyin,目前测试下来运行速度太慢。
         # 将标准中文文本符号替换成 bert 符号库中的单符号,以保证bert的效果.
+        text = text + "。" if text else text
         text = text.replace("——", "...")\
             .replace("—", "...")\
             .replace("……", "...")\

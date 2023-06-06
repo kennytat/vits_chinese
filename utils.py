@@ -52,6 +52,14 @@ def remove_comment(txt_input):
   txt = re.sub(pattern, "", txt_input, flags=re.MULTILINE|re.DOTALL)
   return txt
 
+def round_up(n, decimals=0):
+    multiplier = 10 ** decimals
+    return math.ceil(n * multiplier) / multiplier
+
+def round_down(n, decimals=0):
+    multiplier = 10 ** decimals
+    return math.floor(n * multiplier) / multiplier
+  
 def transcript_to_srt(txt_input):
   try:
     srt = ""
@@ -118,6 +126,7 @@ def txt_to_paragraph(txt_input):
 def combine_wav_segment(wav_list, output_file):
     print("synthesization done, start concatenating:: ")
     if len(wav_list) == 1 and wav_list[0].start_time == 0:
+      print("no combine_wav_segment::",)
       # move wav_list[0] to output_file
       shutil.move(wav_list[0].wav_path, output_file)
       return (output_file, None)

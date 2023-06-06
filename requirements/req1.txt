@@ -1,0 +1,8 @@
+Cython
+transformers
+tensorboard
+pypinyin
+gradio
+srt
+docx2txt
+so-vits-svc-fork

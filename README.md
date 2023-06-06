@@ -48,7 +48,7 @@ docker build -t kennytat/vits-chinese:gpu .
 - Download model and extract to ./model (prosody_model.pt, vits_bert_model.pth, G.pth, config.json)
 
 ```
-bert/prosody_model.pt
+model/bert/<language>/prosody_model.pt
 
 model/tts/<voice>/vits_bert_model.pth
 

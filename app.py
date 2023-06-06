@@ -14,6 +14,9 @@ from pathlib import Path
 import shutil
 import soundfile as sf
 import librosa
+import numpy as np
+# import commons
+# from text import text_to_sequence
 
 logging.getLogger('numba').setLevel(logging.WARNING)
 limitation = os.getenv("SYSTEM") == "spaces"
@@ -23,10 +26,18 @@ class WavStruct():
         self.wav_path = wav_path
         self.start_time = start_time
 
+# def get_text(text, hps):
+#     text_norm = text_to_sequence(text, hps.data.text_cleaners)
+#     if hps.data.add_blank:
+#         text_norm = commons.intersperse(text_norm, 0)
+#     text_norm = torch.LongTensor(text_norm)
+#     return text_norm
+  
 def text_to_speech(net_g, tts_front, input_text, speed):
-    print("pre text_to_speech::")
     phonemes, char_embeds = tts_front.chinese_to_phonemes(input_text)
     input_ids = cleaned_text_to_sequence(phonemes)
+    # print("text_to_speech::", phonemes, char_embeds, input_ids)
+
     with torch.no_grad():
         x_tst = torch.LongTensor(input_ids).unsqueeze(0).to(device)
         x_tst_lengths = torch.LongTensor([len(input_ids)]).to(device)
@@ -42,17 +53,28 @@ def pre_text_to_speech(net_g, tts_front, input_text, output_file, tts_voice_ckpt
         text_len = len(re.sub("\[([A-Z]{2})\]", "", input_text))
         max_len = 150
         if text_len > max_len:
+            print("text limitation called::")
             input_text = input_text[:150]
-            
-    ## Return wav without matching desired_duration 
-    # audio = text_to_speech(net_g, tts_front, input_text, speed)
-    ## OR
-    ## TTS once for getting real duration then calculate speed and run again for adjusting speed
-    wav_tmp = text_to_speech(net_g, tts_front, input_text, speed)
-    predicted_duration = librosa.get_duration(y=wav_tmp, sr=FLAGS.sample_rate)
-    speed = round(desired_duration/ predicted_duration, 2) if predicted_duration > 0 else speed
-    print("adjusting speed::", predicted_duration, desired_duration, speed)
-    audio = text_to_speech(net_g, tts_front, input_text, speed)
+    audio = ""
+    if input_text:
+        if desired_duration > 0:
+          ## Return wav without matching desired_duration 
+          # audio = text_to_speech(net_g, tts_front, input_text, speed)
+          ## OR
+          ## TTS once for getting real duration then calculate speed and run again for adjusting speed
+          wav_tmp = text_to_speech(net_g, tts_front, input_text, speed)
+          predicted_duration = librosa.get_duration(y=wav_tmp, sr=FLAGS.sample_rate)
+          if desired_duration > predicted_duration:
+            audio = text_to_speech(net_g, tts_front, input_text, speed)
+          else:
+            speed = utils.round_down(desired_duration*0.97/ predicted_duration, 2) if predicted_duration > 0 else speed
+            print("adjusting speed::", predicted_duration, desired_duration, speed)
+            audio = text_to_speech(net_g, tts_front, input_text, speed)
+        else:
+          audio = text_to_speech(net_g, tts_front, input_text, speed)
+    else:
+      # Create blank audio if text is empty
+      audio = np.zeros(1)
     ## Write final output to file
     sf.write(output_file, audio, samplerate=FLAGS.sample_rate)
     return WavStruct(output_file, start_time)
@@ -140,6 +162,7 @@ def create_calback():
         tts_front = VITS_PinYin("./bert", device)
         # config
         hps = utils.get_hparams_from_file(os.path.join(FLAGS.config_dir, "bert_vits.json"))
+        # hps = utils.get_hparams_from_file(os.path.join(FLAGS.config_dir, "ljs_base.json"))
 
         # model
         net_g = SynthesizerTrn(
@@ -153,7 +176,8 @@ def create_calback():
         convert_voice_ckpt_dir = os.path.join(FLAGS.convert_ckpt_dir, convert_voice) if convert_voice != "none" else "none"
         print("selected Convert voice:", convert_voice_ckpt_dir) 
         
-        utils.load_model(os.path.join(tts_voice_ckpt_dir, "vits_bert_model.pth"), net_g)
+        utils.load_model(os.path.join(tts_voice_ckpt_dir, "model.pth"), net_g)
+        # utils.load_checkpoint(os.path.join(tts_voice_ckpt_dir, "model.pth"), net_g, None)
         net_g.eval()
         net_g.to(device)     
         ## Process input_text first
